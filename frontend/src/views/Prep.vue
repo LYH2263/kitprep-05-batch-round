@@ -5,17 +5,22 @@ const tree = ref<any[]>([])
 const data = ref<any>(null)
 const shortages = ref<any[]>([])
 const orders = ref<any[]>([])
+function applySheet(sheet: any) {
+  data.value = sheet
+  shortages.value = sheet.shortages || []
+}
+async function loadLatest() {
+  // 打开备料台只读已落单的快照,不现算
+  applySheet(await api('/prep/latest?order_id=1'))
+}
 async function run() {
-  data.value = await api('/prep/run?order_id=1', { method: 'POST' })
-  try {
-    const res = await api('/prep/shortages?order_id=1')
-    shortages.value = res.shortages || []
-  } catch { shortages.value = [] }
+  // 「生成备料单」只出单:新落一张,不动库存
+  applySheet(await api('/prep/run?order_id=1', { method: 'POST' }))
 }
 onMounted(async () => {
   tree.value = await api('/bom/tree')
   orders.value = await api('/orders')
-  await run()
+  await loadLatest()
 })
 </script>
 <template>
@@ -39,12 +44,18 @@ onMounted(async () => {
       </div>
     </aside>
     <section class="kp-worksheet" v-if="data">
-      <h2>备料单 · {{ data.order?.code }} · {{ data.order?.outlet }}</h2>
+      <h2>备料单 · {{ data.order?.code }} · {{ data.order?.outlet }} · 单号 #{{ data.id }}</h2>
       <table>
-        <thead><tr><th>原料</th><th>需求</th><th>库存</th><th>单位</th></tr></thead>
+        <thead><tr><th>原料</th><th>需求</th><th>占用</th><th>库存</th><th>缺料</th><th>倍数</th><th>单位</th></tr></thead>
         <tbody>
           <tr v-for="l in data.prep_lines" :key="l.ingredient_id">
-            <td>{{ l.ingredient_name }}</td><td>{{ l.need_qty }}</td><td>{{ l.stock_qty }}</td><td>{{ l.unit }}</td>
+            <td>{{ l.ingredient_name }}</td>
+            <td>{{ l.need_qty }}</td>
+            <td><strong>{{ l.reserved_qty }}</strong></td>
+            <td>{{ l.stock_qty }}</td>
+            <td><span v-if="l.shortage > 0" class="badge badge-bad">{{ l.shortage }}</span><span v-else>0</span></td>
+            <td>{{ l.prep_multiple ?? '—' }}</td>
+            <td>{{ l.unit }}</td>
           </tr>
         </tbody>
       </table>

@@ -10,7 +10,7 @@ onMounted(async () => {
 </script>
 <template>
   <h1>缺料便利贴</h1>
-  <p class="sub">shortage = need − stock（仅正数）</p>
+  <p class="sub">shortage = 占用 − 库存(仅正数);占用 = 需求按起备倍数取整</p>
   <div class="kp-shortage-sticky" style="max-width:360px;transform:rotate(-1deg);margin-bottom:1rem">
     <h2>⚠ 缺料 {{ stats.shortage_count }} · 合计 {{ stats.total_shortage_qty }}</h2>
     <div v-for="r in rows" :key="r.ingredient_id" class="kp-shortage-item">
@@ -20,11 +20,13 @@ onMounted(async () => {
   </div>
   <div class="card">
     <table>
-      <thead><tr><th>原料</th><th>需求</th><th>库存</th><th>缺料</th><th>单位</th></tr></thead>
+      <thead><tr><th>原料</th><th>需求</th><th>占用</th><th>库存</th><th>缺料</th><th>倍数</th><th>单位</th></tr></thead>
       <tbody>
         <tr v-for="r in rows" :key="r.ingredient_id">
-          <td>{{ r.ingredient_name }}</td><td>{{ r.need_qty }}</td><td>{{ r.stock_qty }}</td>
-          <td><span class="badge badge-bad">{{ r.shortage }}</span></td><td>{{ r.unit }}</td>
+          <td>{{ r.ingredient_name }}</td><td>{{ r.need_qty }}</td><td>{{ r.reserved_qty }}</td>
+          <td>{{ r.stock_qty }}</td>
+          <td><span class="badge badge-bad">{{ r.shortage }}</span></td>
+          <td>{{ r.prep_multiple ?? '—' }}</td><td>{{ r.unit }}</td>
         </tr>
       </tbody>
     </table>
