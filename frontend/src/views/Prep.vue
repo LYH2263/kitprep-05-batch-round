@@ -41,10 +41,15 @@ onMounted(async () => {
     <section class="kp-worksheet" v-if="data">
       <h2>备料单 · {{ data.order?.code }} · {{ data.order?.outlet }}</h2>
       <table>
-        <thead><tr><th>原料</th><th>需求</th><th>库存</th><th>单位</th></tr></thead>
+        <thead><tr><th>原料</th><th>散数需求</th><th>倍数</th><th>占用（取整）</th><th>库存</th><th>单位</th></tr></thead>
         <tbody>
           <tr v-for="l in data.prep_lines" :key="l.ingredient_id">
-            <td>{{ l.ingredient_name }}</td><td>{{ l.need_qty }}</td><td>{{ l.stock_qty }}</td><td>{{ l.unit }}</td>
+            <td>{{ l.ingredient_name }}</td>
+            <td class="muted">{{ l.raw_need_qty }}</td>
+            <td>{{ l.prep_multiple == null ? '—' : l.prep_multiple }}</td>
+            <td><strong>{{ l.need_qty }}</strong></td>
+            <td>{{ l.stock_qty }}</td>
+            <td>{{ l.unit }}</td>
           </tr>
         </tbody>
       </table>

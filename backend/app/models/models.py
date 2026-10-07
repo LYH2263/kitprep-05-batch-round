@@ -17,6 +17,8 @@ class Ingredient(Base):
     name: Mapped[str] = mapped_column(String(128))
     unit: Mapped[str] = mapped_column(String(16), default="kg")
     stock_qty: Mapped[float] = mapped_column(Float, default=0.0)
+    # 起备倍数：NULL = 没配过，不取整；只允许正数。这是“栏”，不是备料单。
+    prep_multiple: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
 
 class BomLine(Base):
     __tablename__ = "bom_lines"
